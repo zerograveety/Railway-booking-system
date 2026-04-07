@@ -1,0 +1,393 @@
+{% extends "base.html" %}
+
+{% block title %}Search Trains - Indian Railways{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+
+    .search-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.4);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow-lg);
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .search-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; height: 5px; width: 100%;
+        background: linear-gradient(90deg, var(--railway-primary), var(--railway-accent));
+    }
+
+    .search-card h2 {
+        color: var(--railway-secondary);
+        margin-bottom: 2rem;
+        font-weight: 800;
+        text-align: center;
+    }
+
+    .form-control {
+        border-radius: var(--border-radius-sm);
+        padding: 0.85rem 1.2rem;
+        border: 2px solid rgba(0, 0, 0, 0.05);
+        transition: var(--transition);
+        background: var(--railway-bg);
+        font-weight: 500;
+    }
+
+    .form-control:focus {
+        border-color: var(--railway-primary);
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        background: white;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: var(--railway-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .station-suggestions {
+        position: absolute;
+        width: 100%;
+        background: white;
+        border-radius: var(--border-radius-sm);
+        box-shadow: var(--box-shadow-lg);
+        z-index: 1000;
+        max-height: 300px;
+        overflow-y: auto;
+        display: none;
+        margin-top: 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .suggestion-item {
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        transition: var(--transition);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+    }
+
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+    .suggestion-item:hover {
+        background-color: var(--railway-bg);
+        padding-left: 2rem;
+    }
+
+    .suggestion-item .station-name {
+        font-weight: 700;
+        color: var(--railway-secondary);
+        margin-bottom: 0.2rem;
+    }
+
+    .suggestion-item .station-info {
+        font-size: 0.85rem;
+        color: var(--railway-text-muted);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .train-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+    }
+
+    .train-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--box-shadow-lg);
+        border-color: rgba(79, 70, 229, 0.1);
+    }
+
+    .train-card .card-body {
+        padding: 2rem;
+    }
+
+    .train-card .card-title {
+        color: var(--railway-secondary);
+        font-weight: 800;
+        margin-bottom: 0.3rem;
+        font-size: 1.4rem;
+    }
+
+    .train-info-row {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin: 2rem 0;
+        padding: 1.5rem 0;
+        border-top: 1px dashed rgba(0, 0, 0, 0.1);
+        border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+    }
+
+    .train-time {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--railway-primary);
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .station-name {
+        color: var(--railway-text);
+        font-weight: 600;
+        font-size: 0.95rem;
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .train-route {
+        flex-grow: 1;
+        position: relative;
+        height: 2px;
+        background: #CBD5E1;
+        margin: 0 1rem;
+    }
+
+    .train-route::before,
+    .train-route::after {
+        content: '';
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: white;
+        border: 3px solid var(--railway-primary);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .train-route::before { left: -6px; border-color: var(--railway-accent); }
+    .train-route::after { right: -6px; }
+
+    .train-duration {
+        color: var(--railway-text-muted);
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .btn-book {
+        background: linear-gradient(135deg, var(--railway-primary), var(--railway-primary-hover));
+        color: white;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-book:hover {
+        background: linear-gradient(135deg, var(--railway-primary-hover), var(--railway-primary));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(79, 70, 229, 0.3);
+        color: white;
+    }
+
+    .no-trains-card {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--box-shadow);
+        border: 1px dashed rgba(0,0,0,0.1);
+    }
+
+    .no-trains-card i {
+        font-size: 4rem;
+        color: var(--railway-text-muted);
+        margin-bottom: 1.5rem;
+    }
+
+    .no-trains-card h5 {
+        color: var(--railway-secondary);
+        margin-bottom: 0.5rem;
+        font-weight: 800;
+        font-size: 1.5rem;
+    }
+
+    .no-trains-card p {
+        color: var(--railway-text-muted);
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <div class="search-card">
+        <h2><i class="fas fa-search me-2"></i>Search Trains</h2>
+        <form method="GET" action="{{ url_for('search') }}" class="row g-3">
+            <div class="col-md-5">
+                <label for="from" class="form-label">From</label>
+                <div class="position-relative">
+                    <input type="text" class="form-control" id="from" name="from" 
+                           placeholder="Enter source station" autocomplete="off" required>
+                    <input type="hidden" id="from_id" name="from_id">
+                    <div class="station-suggestions" id="from-suggestions"></div>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <label for="to" class="form-label">To</label>
+                <div class="position-relative">
+                    <input type="text" class="form-control" id="to" name="to" 
+                           placeholder="Enter destination station" autocomplete="off" required>
+                    <input type="hidden" id="to_id" name="to_id">
+                    <div class="station-suggestions" id="to-suggestions"></div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" class="form-control" id="date" name="date" required
+                       min="{{ today }}" value="{{ today }}">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-2"></i>Search Trains
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% if trains %}
+    <div class="search-results">
+        {% for train in trains %}
+        <div class="train-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="card-title">{{ train.name }}</h5>
+                        <div class="text-muted">{{ train.train_number }}</div>
+                    </div>
+                    <a href="{{ url_for('select_seat', train_id=train.id, journey_date=date) }}" 
+                       class="btn btn-book">
+                        <i class="fas fa-ticket-alt me-2"></i>Book Now
+                    </a>
+                </div>
+                <div class="train-info-row">
+                    <div class="text-center">
+                        <div class="train-time">{{ train.departure_time.strftime('%H:%M') }}</div>
+                        <div class="station-name">{{ train.source.name[:20] }}</div>
+                    </div>
+                    <div class="train-route"></div>
+                    <div class="text-center">
+                        <div class="train-time">{{ train.arrival_time.strftime('%H:%M') }}</div>
+                        <div class="station-name">{{ train.destination.name[:20] }}</div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between text-muted">
+                    <div class="train-duration">
+                        <i class="far fa-clock me-2"></i>{{ train.duration }}
+                    </div>
+                    <div>
+                        <i class="fas fa-chair me-2"></i>Available Seats: {{ train.available_seats }}
+                    </div>
+                    <div>
+                        <i class="fas fa-rupee-sign me-2"></i>Starts from ₹{{ train.min_price }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% elif searched %}
+    <div class="no-trains-card">
+        <i class="fas fa-train"></i>
+        <h5>No Trains Found</h5>
+        <p class="text-muted">Try different stations or date</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    function setupStationSearch(inputId, suggestionsId, hiddenInputId) {
+        const input = document.getElementById(inputId);
+        const suggestions = document.getElementById(suggestionsId);
+        const hiddenInput = document.getElementById(hiddenInputId);
+
+        const searchStations = debounce(async (query) => {
+            if (query.length < 2) {
+                suggestions.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/stations/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (data.length > 0) {
+                    suggestions.innerHTML = data.map(station => `
+                        <div class="suggestion-item" data-id="${station.id}" data-name="${station.name}">
+                            <div class="station-name">${station.name}</div>
+                            <div class="station-info">${station.city} • ${station.code}</div>
+                        </div>
+                    `).join('');
+                    suggestions.style.display = 'block';
+                } else {
+                    suggestions.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error fetching stations:', error);
+            }
+        }, 300);
+
+        input.addEventListener('input', (e) => searchStations(e.target.value));
+
+        suggestions.addEventListener('click', (e) => {
+            const item = e.target.closest('.suggestion-item');
+            if (item) {
+                input.value = item.dataset.name;
+                hiddenInput.value = item.dataset.id;
+                suggestions.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !suggestions.contains(e.target)) {
+                suggestions.style.display = 'none';
+            }
+        });
+    }
+
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').min = today;
+
+    // Initialize station search
+    setupStationSearch('from', 'from-suggestions', 'from_id');
+    setupStationSearch('to', 'to-suggestions', 'to_id');
+</script>
+{% endblock %}

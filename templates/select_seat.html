@@ -1,0 +1,506 @@
+{% block extra_css %}
+<style>
+    :root {
+        --railway-indigo: #4F46E5;
+        --railway-cyan: #06B6D4;
+        --seat-available: #ffffff;
+        --seat-selected: #4F46E5;
+        --seat-booked: #e2e8f0;
+        --seat-hover: #eef2ff;
+    }
+
+    .seat-selection-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    /* Premium Train Card */
+    .premium-train-card {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border-radius: 24px;
+        padding: 2.5rem;
+        margin-bottom: 3rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .premium-train-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .train-main-info h1 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        letter-spacing: -1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .train-badge {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.4rem 1rem;
+        border-radius: 8px;
+        font-family: monospace;
+        letter-spacing: 2px;
+        font-weight: 700;
+        color: var(--railway-cyan);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .route-visual {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stn-point {
+        text-align: center;
+    }
+
+    .stn-time {
+        font-size: 1.8rem;
+        font-weight: 800;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .stn-label {
+        color: #94a3b8;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .route-path {
+        flex-grow: 1;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0.2) 80%, transparent);
+        margin: 0 3rem;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .route-path i {
+        color: var(--railway-cyan);
+        background: #1e293b;
+        padding: 0 1rem;
+    }
+
+    /* Coach Selection */
+    .coach-nav {
+        background: white;
+        border-radius: 16px;
+        padding: 0.5rem;
+        display: inline-flex;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        margin-bottom: 2rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .coach-link {
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        color: var(--railway-text);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        background: transparent;
+    }
+
+    .coach-link.active {
+        background: var(--railway-indigo);
+        color: white;
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+    }
+
+    /* Seat Styling */
+    .seat-grid-container {
+        background: #f1f5f9;
+        border-radius: 40px;
+        padding: 3rem 2rem;
+        border: 8px solid #cbd5e1;
+        position: relative;
+        box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .coach-label-tag {
+        position: absolute;
+        top: -18px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--railway-indigo);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 800;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+    }
+
+    .seat {
+        aspect-ratio: 1;
+        background: var(--seat-available);
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--railway-secondary);
+    }
+
+    .seat:not(.booked):hover {
+        transform: translateY(-4px);
+        background: var(--seat-hover);
+        border-color: var(--railway-indigo);
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.1);
+    }
+
+    .seat.selected {
+        background: var(--railway-indigo);
+        border-color: var(--railway-indigo);
+        color: white;
+        animation: pulseSelect 1.5s infinite;
+    }
+
+    @keyframes pulseSelect {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+
+    .seat.booked {
+        background: var(--seat-booked);
+        border-color: #cbd5e1;
+        color: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    .seat i { font-size: 1.2rem; margin-bottom: 2px; opacity: 0.6; }
+    .seat.selected i { opacity: 1; color: white; }
+
+    .seat-num { font-weight: 800; font-size: 1rem; }
+    .seat-type-label { font-size: 0.6rem; text-transform: uppercase; font-weight: 700; opacity: 0.7; }
+
+    /* Summary Sidebar */
+    .summary-glass {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 24px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 2rem;
+    }
+
+    .btn-checkout {
+        background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        color: white;
+        border: none;
+        width: 100%;
+        padding: 1.2rem;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-top: 1.5rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-checkout:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-checkout:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+
+    .price-total {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 2rem;
+        color: var(--railway-indigo);
+    }
+
+    @media (max-width: 992px) {
+        .route-path { margin: 0 1rem; }
+        .stn-time { font-size: 1.4rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="seat-selection-container">
+    <form method="POST" action="{{ url_for('book_ticket') }}" id="booking-form">
+        <input type="hidden" name="train_id" value="{{ train.id }}">
+        <input type="hidden" name="journey_date" value="{{ journey_date }}">
+        <input type="hidden" name="seat_ids" id="selected-seat-ids">
+        
+        <!-- Premium Train Info Card -->
+        <div class="premium-train-card">
+            <div class="row align-items-center">
+                <div class="col-md-6 train-main-info">
+                    <div class="train-badge mb-2">{{ train.train_number }}</div>
+                    <h1>{{ train.name }}</h1>
+                    <p class="text-white-50 mb-0"><i class="fas fa-calendar-alt me-2"></i>DEPARTING: {{ journey_date }}</p>
+                </div>
+                <div class="col-md-6 text-md-end mt-4 mt-md-0">
+                    <div class="passenger-count-display">
+                        <span class="h5 opacity-75">EXECUTIVE CHAIR CAR</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="route-visual">
+                <div class="stn-point">
+                    <div class="stn-time">{{ train.departure_time.strftime('%H:%M') }}</div>
+                    <div class="stn-label">{{ train.source.name }}</div>
+                </div>
+                <div class="route-path">
+                    <i class="fas fa-train"></i>
+                </div>
+                <div class="stn-point">
+                    <div class="stn-time">{{ train.arrival_time.strftime('%H:%M') }}</div>
+                    <div class="stn-label">{{ train.destination.name }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="coach-selection-area mb-4">
+                    <div class="coach-nav">
+                        {% for coach in ['A1', 'A2', 'A3'] %}
+                        <button type="button" class="coach-link {% if loop.first %}active{% endif %}" data-coach="{{ coach }}">
+                            Coach {{ coach }}
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <div class="seat-grid-container">
+                        <div class="coach-label-tag">PRIMARY COACH UNIT</div>
+                        
+                        {% for target_coach in ['A1', 'A2', 'A3'] %}
+                        <div class="seat-layout {% if loop.first %}active-layout{% endif %}" 
+                             id="layout-{{ target_coach }}" 
+                             style="display: {% if loop.first %}grid{% else %}none{% endif %}; grid-template-columns: repeat(3, 1fr) 40px repeat(3, 1fr); gap: 1rem;">
+                            {% set ns = namespace(count=0) %}
+                            {% for seat in seats %}
+                                {% if seat.coach == target_coach %}
+                                <div class="seat {% if seat.id in booked_seat_ids %}booked{% else %}available{% endif %}"
+                                     data-seat-id="{{ seat.id }}" 
+                                     data-seat-number="{{ seat.seat_number }}"
+                                     data-price="{{ seat.price }}"
+                                     data-coach="{{ seat.coach }}">
+                                    <i class="fas fa-couch"></i>
+                                    <div class="seat-num">{{ seat.seat_number }}</div>
+                                    <div class="seat-type-label">{{ seat.seat_type }}</div>
+                                </div>
+                                
+                                {% set ns.count = ns.count + 1 %}
+                                {% if ns.count % 6 == 3 %}
+                                    <div class="aisle-spacer" style="background: rgba(0,0,0,0.05); border-radius: 4px;"></div>
+                                {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="legend mt-4 d-flex justify-content-center gap-4 py-3 px-4 bg-white rounded-pill shadow-sm border">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:16px; height:16px; background:#fff; border:2px solid #e2e8f0; border-radius:4px;"></div>
+                            <span class="small fw-bold">Available</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:16px; height:16px; background:#4F46E5; border-radius:4px;"></div>
+                            <span class="small fw-bold">Selected</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:16px; height:16px; background:#e2e8f0; border-radius:4px;"></div>
+                            <span class="small fw-bold">Booked</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="summary-glass">
+                    <h3 class="h5 fw-bold mb-4 d-flex align-items-center gap-2">
+                        <i class="fas fa-ticket-alt text-primary"></i>
+                        Journey Summary
+                    </h3>
+                    
+                    <div id="selected-seats-container" class="mb-4">
+                        <div class="text-center py-5 text-muted opacity-50">
+                            <i class="fas fa-couch h1 mb-3"></i>
+                            <p class="small fw-bold">No seats selected</p>
+                        </div>
+                    </div>
+
+                    <div class="passenger-details" style="display: none;">
+                        <span class="section-title">Passenger Names</span>
+                        <div class="passenger-forms">
+                            <!-- Dynamic JS -->
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-top mt-4">
+                        <div class="d-flex justify-content-between align-items-end">
+                            <span class="text-muted fw-bold small text-uppercase">Total Fare</span>
+                            <div class="price-total">₹<span id="total-amount">0</span></div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-checkout" disabled>
+                        Confirm Booking
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <div class="text-center mt-3 text-muted" style="font-size: 0.75rem;">
+                        <i class="fas fa-lock me-1"></i> SSL SECURED TRANSIT
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectedSeats = new Map();
+        const totalAmountEl = document.getElementById('total-amount');
+        const checkoutButton = document.querySelector('.btn-checkout');
+        const selectedSeatsContainer = document.getElementById('selected-seats-container');
+        const passengerDetails = document.querySelector('.passenger-details');
+        const passengerForms = document.querySelector('.passenger-forms');
+        const selectedSeatInput = document.getElementById('selected-seat-ids');
+        const bookingForm = document.getElementById('booking-form');
+        const coachLinks = document.querySelectorAll('.coach-link');
+        const layouts = document.querySelectorAll('.seat-layout');
+
+        // Handle seat selection
+        document.querySelectorAll('.seat:not(.booked)').forEach(seat => {
+            seat.addEventListener('click', function() {
+                const seatId = this.dataset.seatId;
+                
+                if (this.classList.contains('selected')) {
+                    this.classList.remove('selected');
+                    selectedSeats.delete(seatId);
+                } else {
+                    this.classList.add('selected');
+                    selectedSeats.set(seatId, {
+                        number: this.dataset.seatNumber,
+                        price: parseInt(this.dataset.price),
+                        coach: this.dataset.coach,
+                        type: this.querySelector('.seat-type-label').innerText
+                    });
+                }
+                updateSummary();
+            });
+        });
+
+        // Switch Coach Views
+        coachLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                coachLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                
+                const selectedCoach = this.dataset.coach;
+                
+                layouts.forEach(layout => {
+                    layout.classList.remove('active-layout');
+                    layout.style.display = 'none';
+                    if (layout.id === `layout-${selectedCoach}`) {
+                        layout.classList.add('active-layout');
+                        layout.style.display = 'grid';
+                    }
+                });
+            });
+        });
+
+        function updateSummary() {
+            let total = 0;
+            passengerForms.innerHTML = '';
+            
+            if (selectedSeats.size > 0) {
+                selectedSeatsContainer.innerHTML = '';
+                passengerDetails.style.display = 'block';
+                checkoutButton.disabled = false;
+                
+                selectedSeats.forEach((details, seatId) => {
+                    total += details.price;
+
+                    const seatItem = document.createElement('div');
+                    seatItem.className = 'd-flex justify-content-between align-items-center mb-3 p-3 bg-white border rounded-4 shadow-sm';
+                    seatItem.style.animation = 'slideIn 0.3s ease-out';
+                    seatItem.innerHTML = `
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-indigo text-white px-2 py-1 rounded small fw-bold" style="background: #4F46E5;">${details.coach}</div>
+                            <div>
+                                <div class="fw-bold">Seat ${details.number}</div>
+                                <div class="small text-muted">${details.type}</div>
+                            </div>
+                        </div>
+                        <div class="fw-bold text-indigo" style="color: #4F46E5;">₹${details.price}</div>
+                    `;
+                    selectedSeatsContainer.appendChild(seatItem);
+
+                    const passengerForm = document.createElement('div');
+                    passengerForm.className = 'mb-3';
+                    passengerForm.innerHTML = `
+                        <label class="form-label small fw-bold text-muted mb-1">NAME FOR SEAT ${details.number}</label>
+                        <input type="text" class="form-control form-control-sm rounded-3" name="passenger_names[]" placeholder="Full Name" required>
+                        <input type="hidden" name="seat_ids[]" value="${seatId}">
+                    `;
+                    passengerForms.appendChild(passengerForm);
+                });
+            } else {
+                passengerDetails.style.display = 'none';
+                checkoutButton.disabled = true;
+                selectedSeatsContainer.innerHTML = `
+                    <div class="text-center py-5 text-muted opacity-50">
+                        <i class="fas fa-couch h1 mb-3"></i>
+                        <p class="small fw-bold">No seats selected</p>
+                    </div>
+                `;
+            }
+
+            totalAmountEl.textContent = total;
+            selectedSeatInput.value = Array.from(selectedSeats.keys()).join(',');
+        }
+
+        bookingForm.addEventListener('submit', function(e) {
+            if (selectedSeats.size === 0) {
+                e.preventDefault();
+                alert('Please select at least one seat.');
+            }
+        });
+    });
+</script>
+{% endblock %}
