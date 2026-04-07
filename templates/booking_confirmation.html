@@ -1,0 +1,324 @@
+{% block extra_css %}
+<style>
+    .confirmation-page {
+        background: #f8fafc;
+        min-height: 100vh;
+        padding-bottom: 5rem;
+    }
+
+    .success-hero {
+        background: linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%);
+        padding: 5rem 0 8rem;
+        text-align: center;
+        color: white;
+        clip-path: ellipse(150% 100% at 50% 0%);
+    }
+
+    .success-icon {
+        font-size: 4rem;
+        background: rgba(255, 255, 255, 0.2);
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin: 0 auto 1.5rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .ticket-container {
+        margin-top: -6rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Digital Ticket Styling */
+    .digital-ticket {
+        background: white;
+        border-radius: 30px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .ticket-top {
+        background: #0f172a;
+        color: white;
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ticket-id {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        letter-spacing: 1px;
+        opacity: 0.8;
+    }
+
+    .ticket-status-pill {
+        background: var(--railway-success);
+        padding: 0.4rem 1.2rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .ticket-body {
+        padding: 2rem;
+        position: relative;
+    }
+
+    /* Tear-off Effect */
+    .ticket-divider {
+        height: 2px;
+        border-top: 2px dashed #e2e8f0;
+        margin: 1.5rem 0;
+        position: relative;
+    }
+
+    .ticket-divider::before, .ticket-divider::after {
+        content: '';
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        background: #f8fafc;
+        border-radius: 50%;
+        top: -16px;
+    }
+
+    .ticket-divider::before { left: -36px; }
+    .ticket-divider::after { right: -36px; }
+
+    .route-display {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .station-node {
+        text-align: center;
+    }
+
+    .stn-code {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--railway-secondary);
+        line-height: 1;
+    }
+
+    .stn-name {
+        font-size: 0.9rem;
+        color: var(--railway-text-muted);
+        font-weight: 500;
+    }
+
+    .route-line {
+        flex-grow: 1;
+        height: 2px;
+        background: #e2e8f0;
+        margin: 0 2rem;
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .route-line i {
+        background: white;
+        padding: 0 1rem;
+        color: var(--railway-primary);
+        font-size: 1.2rem;
+    }
+
+    .ticket-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+
+    .info-item label {
+        display: block;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--railway-text-muted);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.2rem;
+    }
+
+    .info-item span {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--railway-secondary);
+    }
+
+    .passenger-row {
+        background: #f1f5f9;
+        padding: 1rem 1.5rem;
+        border-radius: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+    }
+
+    .passenger-name {
+        font-weight: 700;
+        color: var(--railway-secondary);
+    }
+
+    .price-tag {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        color: var(--railway-primary);
+        font-size: 1.2rem;
+    }
+
+    .ticket-footer {
+        background: #f8fafc;
+        padding: 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .barcode-svg {
+        height: 40px;
+        opacity: 0.7;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    @media print {
+        .navbar, .footer, .success-hero, .action-buttons { display: none !important; }
+        .confirmation-page { background: white; padding: 0; }
+        .ticket-container { margin-top: 0; }
+        .digital-ticket { box-shadow: none; border: 1px solid #eee; break-inside: avoid; }
+    }
+
+    @media (max-width: 768px) {
+        .ticket-info-grid { grid-template-columns: 1fr 1fr; }
+        .route-line { margin: 0 1rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-page">
+    <div class="success-hero">
+        <div class="container">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h1 class="display-4 fw-bold">Booking Confirmed!</h1>
+            <p class="lead opacity-75">Wishing you a pleasant journey with Indian Railways</p>
+        </div>
+    </div>
+
+    <div class="container ticket-container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                
+                {% for booking in bookings %}
+                <div class="digital-ticket">
+                    <div class="ticket-top">
+                        <span class="ticket-id">PNR: {{ 8000000 + booking.id }}</span>
+                        <span class="ticket-status-pill">Confirmed</span>
+                    </div>
+                    
+                    <div class="ticket-body">
+                        <div class="route-display">
+                            <div class="station-node">
+                                <div class="stn-code">{{ booking.source[:3].upper() }}</div>
+                                <div class="stn-name">{{ booking.source }}</div>
+                            </div>
+                            <div class="route-line">
+                                <i class="fas fa-train"></i>
+                            </div>
+                            <div class="station-node">
+                                <div class="stn-code">{{ booking.destination[:3].upper() }}</div>
+                                <div class="stn-name">{{ booking.destination }}</div>
+                            </div>
+                        </div>
+
+                        <div class="ticket-info-grid">
+                            <div class="info-item">
+                                <label>Train Details</label>
+                                <span>{{ booking.train_number }} - {{ booking.train_name }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Departure Date</label>
+                                <span>{{ booking.journey_date }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Travel Class</label>
+                                <span>{{ booking.seat_type }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Coach/Seat</label>
+                                <span>{{ booking.coach }} / {{ booking.seat_number }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Departure Time</label>
+                                <span>{{ booking.departure_time }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Arriving At</label>
+                                <span>{{ booking.arrival_time }}</span>
+                            </div>
+                        </div>
+
+                        <div class="ticket-divider"></div>
+
+                        <div class="passenger-row">
+                            <div class="p-info">
+                                <div class="small text-uppercase fw-bold text-muted" style="font-size: 0.65rem;">Passenger</div>
+                                <div class="passenger-name">{{ booking.passenger_name }}</div>
+                            </div>
+                            <div class="price-tag">₹{{ booking.price }}</div>
+                        </div>
+                    </div>
+
+                    <div class="ticket-footer">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Barcode_128.svg/1200px-Barcode_128.svg.png" class="barcode-svg" alt="barcode">
+                        <div class="small fw-bold text-muted">VALID FOR TRAVEL</div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="action-buttons mt-5">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-dark px-4 py-3">
+                        <i class="fas fa-th-large me-2"></i> Dashboard
+                    </a>
+                    <button onclick="window.print()" class="btn btn-primary px-5 py-3">
+                        <i class="fas fa-print me-2"></i> Download / Print Tickets
+                    </button>
+                    {% if bookings|length == 1 and bookings[0].journey_date > today %}
+                    <form action="{{ url_for('cancel_booking', booking_id=bookings[0].id) }}" method="POST" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger px-4 py-3" onclick="return confirm('Are you sure?')">
+                            Cancel
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

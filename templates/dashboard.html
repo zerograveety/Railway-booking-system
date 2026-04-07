@@ -1,0 +1,275 @@
+{% block extra_css %}
+<style>
+    .dashboard-page {
+        background: #f8fafc;
+        min-height: 100vh;
+        padding: 4rem 0;
+    }
+
+    .welcome-section {
+        margin-bottom: 3rem;
+    }
+
+    .welcome-header {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 2.8rem;
+        letter-spacing: -1.5px;
+        color: var(--railway-dark);
+    }
+
+    .glass-stat-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    /* Booking Cards */
+    .dashboard-card {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        border-color: var(--railway-indigo);
+    }
+
+    .card-status-bar {
+        height: 4px;
+        width: 100%;
+        background: #e2e8f0;
+    }
+
+    .status-confirmed .card-status-bar { background: #10b981; }
+    .status-cancelled .card-status-bar { background: #ef4444; }
+
+    .card-body-main {
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .journey-chunk {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .stn-node {
+        text-align: center;
+    }
+
+    .stn-code {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 1.2rem;
+        color: var(--railway-dark);
+        display: block;
+    }
+
+    .stn-name-small {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+    }
+
+    .journey-connector {
+        color: #cbd5e1;
+        font-size: 0.8rem;
+    }
+
+    .train-info-chunk {
+        border-left: 1px solid #f1f5f9;
+        padding-left: 2rem;
+    }
+
+    .meta-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .meta-value {
+        font-weight: 700;
+        color: var(--railway-secondary);
+        display: block;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .btn-action {
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-view {
+        background: #f1f5f9;
+        color: var(--railway-dark);
+    }
+
+    .btn-view:hover { background: #e2e8f0; }
+
+    .btn-cancel-dash {
+        background: #fff1f2;
+        color: #ef4444;
+        border: none;
+    }
+
+    .btn-cancel-dash:hover { background: #fee2e2; }
+
+    .empty-dashboard {
+        text-align: center;
+        padding: 4rem;
+        background: white;
+        border-radius: 32px;
+        border: 2px dashed #e2e8f0;
+    }
+
+    @media (max-width: 992px) {
+        .card-body-main { flex-direction: column; text-align: center; gap: 2rem; }
+        .train-info-chunk { border-left: none; padding-left: 0; border-top: 1px solid #f1f5f9; padding-top: 1.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="container">
+        
+        <div class="welcome-section row align-items-end mb-5">
+            <div class="col-md-7">
+                <p class="text-indigo fw-bold mb-1" style="color: #4F46E5;">HELLO, {{ current_user.username.upper() }}</p>
+                <h1 class="welcome-header">Your Dashboard</h1>
+            </div>
+            <div class="col-md-5 mt-4 mt-md-0">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="glass-stat-card">
+                            <div class="stat-icon" style="background: #eef2ff; color: #4F46E5;">
+                                <i class="fas fa-ticket-alt"></i>
+                            </div>
+                            <div>
+                                <span class="h4 fw-bold d-block mb-0">{{ bookings|length }}</span>
+                                <span class="small text-muted fw-bold">Total Trips</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="glass-stat-card">
+                            <div class="stat-icon" style="background: #ecfdf5; color: #10b981;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div>
+                                <span class="h4 fw-bold d-block mb-0">Active</span>
+                                <span class="small text-muted fw-bold">Status</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bookings-grid">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="h5 fw-bold mb-0">Recent Bookings</h3>
+                <a href="{{ url_for('search') }}" class="btn btn-primary btn-sm rounded-pill px-3">
+                    <i class="fas fa-plus me-1"></i> New Booking
+                </a>
+            </div>
+
+            {% if bookings %}
+                {% for booking in bookings %}
+                    <div class="dashboard-card status-{{ booking.status.lower() }}">
+                        <div class="card-status-bar"></div>
+                        <div class="card-body-main">
+                            <div class="journey-chunk">
+                                <div class="stn-node">
+                                    <span class="stn-code">{{ booking.train.source.code or 'SRC' }}</span>
+                                    <span class="stn-name-small">{{ booking.train.source.name[:10] }}</span>
+                                </div>
+                                <div class="journey-connector">
+                                    <i class="fas fa-long-arrow-alt-right"></i>
+                                </div>
+                                <div class="stn-node">
+                                    <span class="stn-code">{{ booking.train.destination.code or 'DST' }}</span>
+                                    <span class="stn-name-small">{{ booking.train.destination.name[:10] }}</span>
+                                </div>
+                            </div>
+
+                            <div class="train-info-chunk">
+                                <span class="meta-label">Train & Journey</span>
+                                <span class="meta-value">{{ booking.train.name }} ({{ booking.train.train_number }})</span>
+                                <span class="small text-muted fw-bold">{{ booking.journey_date.strftime('%d %b %Y') }}</span>
+                            </div>
+
+                            <div class="train-info-chunk">
+                                <span class="meta-label">Allocation</span>
+                                <span class="meta-value">Coach {{ booking.seat.coach }} / {{ booking.seat.seat_number }}</span>
+                                <span class="badge {% if booking.status == 'Confirmed' %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %} border-0 mt-1">
+                                    {{ booking.status.upper() }}
+                                </span>
+                            </div>
+
+                            <div class="card-actions">
+                                <a href="{{ url_for('booking_confirmation', booking_ids=booking.id) }}" class="btn-action btn-view">
+                                    <i class="fas fa-eye me-1"></i> View
+                                </a>
+                                {% if booking.status == 'Confirmed' and booking.journey_date > today %}
+                                <form action="{{ url_for('cancel_booking', booking_id=booking.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn-action btn-cancel-dash" onclick="return confirm('Cancel this booking?')">
+                                        <i class="fas fa-times me-1"></i> Cancel
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-dashboard">
+                    <img src="https://illustrations.popsy.co/slate/shaking-hands.svg" alt="Empty" style="width: 200px; opacity: 0.5;" class="mb-4">
+                    <h4 class="fw-bold">No Bookings Found</h4>
+                    <p class="text-muted">You haven't booked any tickets yet. Ready to start your adventure?</p>
+                    <a href="{{ url_for('search') }}" class="btn btn-primary px-4 py-2 rounded-pill mt-3">
+                        Find a Train
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

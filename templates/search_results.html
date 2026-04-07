@@ -1,0 +1,254 @@
+{% block extra_css %}
+<style>
+    .search-results-page {
+        background: #f8fafc;
+        min-height: 100vh;
+        padding: 4rem 0;
+    }
+
+    .results-header {
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+
+    .results-header h2 {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 2.5rem;
+        color: var(--railway-dark);
+        letter-spacing: -1px;
+    }
+
+    .train-glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 24px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .train-glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        border-color: var(--railway-indigo);
+    }
+
+    .train-id-box {
+        background: var(--railway-indigo);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 20px;
+        text-align: center;
+        min-width: 120px;
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+    }
+
+    .train-num {
+        font-family: monospace;
+        font-weight: 700;
+        letter-spacing: 2px;
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .train-name-main {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin-top: 0.5rem;
+    }
+
+    .journey-timeline {
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2rem;
+        position: relative;
+    }
+
+    .timeline-node {
+        text-align: center;
+        z-index: 1;
+    }
+
+    .node-time {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--railway-dark);
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .node-station {
+        font-weight: 700;
+        color: #64748b;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .timeline-path {
+        flex-grow: 1;
+        height: 2px;
+        background: #e2e8f0;
+        margin: 0 2rem;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .timeline-path::before, .timeline-path::after {
+        content: '';
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #cbd5e1;
+        border-radius: 50%;
+    }
+    .timeline-path::before { left: -4px; }
+    .timeline-path::after { right: -4px; }
+
+    .path-label {
+        position: absolute;
+        top: -25px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--railway-indigo);
+        background: #f1f5f9;
+        padding: 2px 10px;
+        border-radius: 10px;
+    }
+
+    .train-meta {
+        text-align: right;
+        min-width: 180px;
+    }
+
+    .fare-display {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--railway-indigo);
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .seats-left {
+        font-weight: 700;
+        color: #10b981;
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-book {
+        background: linear-gradient(135deg, var(--railway-indigo) 0%, var(--railway-cyan) 100%);
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-book:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 5rem;
+        background: white;
+        border-radius: 32px;
+        border: 1px dashed #cbd5e1;
+    }
+
+    @media (max-width: 992px) {
+        .train-glass-card {
+            flex-direction: column;
+            text-align: center;
+        }
+        .journey-timeline {
+            padding: 2rem 0;
+            width: 100%;
+        }
+        .train-meta {
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-results-page">
+    <div class="container">
+        
+        <div class="results-header">
+            <p class="text-uppercase fw-bold text-indigo small letter-spacing-2 mb-2" style="letter-spacing: 2px; color: #4F46E5;">Available Routes</p>
+            <h2>Discover Your Journey</h2>
+            <p class="text-muted">Explore the best train options for your selected destination.</p>
+        </div>
+        
+        {% if trains %}
+            <div class="results-container">
+                {% for train in trains %}
+                    <div class="train-glass-card">
+                        <div class="train-id-box">
+                            <div class="train-num">{{ train.train_number }}</div>
+                            <div class="train-name-main">{{ train.name }}</div>
+                        </div>
+
+                        <div class="journey-timeline">
+                            <div class="timeline-node">
+                                <div class="node-time">{{ train.departure_time.strftime('%H:%M') }}</div>
+                                <div class="node-station">{{ train.source.name }}</div>
+                            </div>
+                            
+                            <div class="timeline-path">
+                                <span class="path-label">
+                                    {{ (train.arrival_time - train.departure_time).total_seconds() // 3600 }}h DUR
+                                </span>
+                                <i class="fas fa-train text-indigo" style="color: #4F46E5; background: #fff; padding: 0 10px; z-index: 2;"></i>
+                            </div>
+
+                            <div class="timeline-node">
+                                <div class="node-time">{{ train.arrival_time.strftime('%H:%M') }}</div>
+                                <div class="node-station">{{ train.destination.name }}</div>
+                            </div>
+                        </div>
+
+                        <div class="train-meta">
+                            <div class="seats-left">
+                                <i class="fas fa-couch me-1"></i> {{ train.total_seats }} Seats Available
+                            </div>
+                            <div class="fare-display mb-3">₹800</div>
+                            <a href="{{ url_for('select_seat', train_id=train.id, journey_date=date) }}" class="btn-book">
+                                Book Now <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-train-slash h1 text-muted opacity-25 mb-4"></i>
+                <h3 class="fw-bold">No Trains Found</h3>
+                <p class="text-muted mb-4">We couldn't find any trains for this route and date combination.</p>
+                <a href="{{ url_for('search') }}" class="btn btn-outline-indigo px-4 py-2 rounded-pill">
+                    <i class="fas fa-search me-2"></i> Try Another Search
+                </a>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
