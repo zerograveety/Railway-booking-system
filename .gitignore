@@ -38,3 +38,8 @@ Thumbs.db
 instance/
 railway.db
 *.log
+
+# Environment / secrets
+.env
+.env.*
+!.env.example

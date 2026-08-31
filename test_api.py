@@ -1,8 +1,14 @@
+import os
 import requests
 import json
 
+# Read credentials from environment (never commit keys)
+RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY')
+if not RAPIDAPI_KEY:
+    raise SystemExit("RAPIDAPI_KEY environment variable not set.")
+
 headers = {
-    "X-RapidAPI-Key": "RAPIDAPI_KEY_REMOVED",
+    "X-RapidAPI-Key": RAPIDAPI_KEY,
     "X-RapidAPI-Host": "irctc1.p.rapidapi.com"
 }
 
